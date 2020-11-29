@@ -55,7 +55,6 @@ def buttonPressedTIME(pin):
 	global tNum
 	tNum += 1
 	tNum %= 10
-#GPIO.cleanup()
 
 # Select MODE
 GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
@@ -65,17 +64,17 @@ GPIO.remove_event_detect(buttonM)
 # Confirm tUnit depending on mode
 def confirmMODE(mode):
 	global tUnit
-	if(mode == Mode.MIN):
+	if(mode == Mode.MIN.value):
 		tUnit = 60
-	elif(mode == Mode.MIN_10):
+	elif(mode == Mode.MIN_10.value):
 		tUnit = 600
-	elif(mode == Mode.HOUR):
+	elif(mode == Mode.HOUR.value):
 		tUnit = 3600
 confirmMODE(mode)
 
 print("mode ", mode, " selected") 
 print("tUnit ", tUnit)
-
+time.sleep(1)
 # Select TIME
 GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedTIME, 200)
 GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for TIME Confirm)
@@ -83,14 +82,22 @@ GPIO.remove_event_detect(buttonM)
 
 print("time ", (tNum+1), " selected") 
 
+# FOR TEST
+GPIO.output(ledG, 0)
+GPIO.output(ledY1, 0)
+GPIO.output(ledY2, 0)
+GPIO.output(ledY3, 0)
+GPIO.output(ledY4, 0)
+GPIO.output(ledY5, 0)
+
 #start Timer
 while(True):
 
 	print(tUnit, tNum)
 	if(tNum >= 5):	#if over 5 hour/min/sec
 		GPIO.output(ledG, 1)
-#	else:
-#		GPIO.output(ledG, 0)
+	else:
+		GPIO.output(ledG, 0)
 	
 	tYellow = tNum%5
 	if(tYellow >= 4):
@@ -117,7 +124,9 @@ while(True):
 	elif(tYellow == 0):
 		GPIO.output(ledY1, 1)
 		GPIO.output(ledY2, 0)
-		if(tUnit != 60 and tUnit != 1):
+
+	if(tNum == 0):
+		if(tUnit != 60):
 			time.sleep((tUnit-60)) #last LED
 	#	alarm	#1분전 알람
 		GPIO.cleanup()	#This CODE is for TEST
