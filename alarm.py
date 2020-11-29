@@ -4,10 +4,11 @@ import pygame
 import time
 
 pygame.mixer.init()
-#alarm1 = pygame.mixer.music.load("alarm1.mp3")
-alarm1 = pygame.mixer.Sound("alarm1.mp3")
 
-while True:
-	alarm1.play()
-#	pygame.mixer.music.start()
-	time.sleep(2)
+def alart_1min_left():
+	alart_1min = pygame.mixer.Sound("./sounds/alart_1min.mp3")
+	alart_1min.play()
+
+def rooster():
+	rooster = pygame.mixer.Sound("./sounds/rooster.mp3")
+	rooster.play()

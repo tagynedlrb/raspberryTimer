@@ -1,6 +1,7 @@
 import time
 import RPi.GPIO as GPIO
 import enum
+import alarm
 
 	#GPIO settings
 GPIO.setmode(GPIO.BCM)
@@ -37,6 +38,7 @@ GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
 tUnit = 1	#Unit differs on MODE
 mode = 0
 tNum = 0
+alarmFlag = 1
 
 from enum import Enum
 class Mode(Enum):
@@ -56,10 +58,6 @@ def buttonPressedTIME(pin):
 	tNum += 1
 	tNum %= 10
 
-# Select MODE
-GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
-GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for MODE Confirm)
-GPIO.remove_event_detect(buttonM)
 
 # Confirm tUnit depending on mode
 def confirmMODE(mode):
@@ -70,11 +68,21 @@ def confirmMODE(mode):
 		tUnit = 600
 	elif(mode == Mode.HOUR.value):
 		tUnit = 3600
+
+# False Alarm flag when pressed
+def buttonPressedALARM(pin):
+	global alarmFlag
+	alarmFlag = False
+
+# Select MODE
+GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
+GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for MODE Confirm)
+GPIO.remove_event_detect(buttonM)
 confirmMODE(mode)
 
 print("mode ", mode, " selected") 
-print("tUnit ", tUnit)
 time.sleep(1)
+
 # Select TIME
 GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedTIME, 200)
 GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for TIME Confirm)
@@ -128,8 +136,7 @@ while(True):
 	if(tNum == 0):
 		if(tUnit != 60):
 			time.sleep((tUnit-60)) #last LED
-	#	alarm	#1분전 알람
-		GPIO.cleanup()	#This CODE is for TEST
+		alarm.alart_1min_left()	#1분전 알람
 		print("ALARM")
 		time.sleep(60)
 #		GPIO.cleanup()	#REAL CODE
@@ -138,12 +145,14 @@ while(True):
 	time.sleep(1*tUnit)
 	tNum -= 1
 
-'''
-while(버튼을 누를때까지):
-	alarm()	// finish alarm
-
-	if( 21 button pressed ):
-		stop alarm()
-		break
-	
-'''
+GPIO.cleanup()
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
+GPIO.add_event_detect(buttonS, GPIO.RISING, buttonPressedALARM, 200)
+#Alarm until button pressed
+while(alarmFlag):
+	alarm.rooster()
+	time.sleep(2)
+GPIO.remove_event_detect(buttonS)
+GPIO.cleanup()
