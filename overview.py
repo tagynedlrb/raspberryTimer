@@ -6,31 +6,29 @@ led = 6 # 핀 번호 GPIO6 의미
 
 tUnit = 1	#Unit differs on MODE
 
-/*
+'''
 def measureDistance():
-        global trig, echo
+	global trig, echo
 
-        while(GPIO.input(echo) == 0):
-                pass
-        pulse_start = time.time() # 신호 1. 초음파 발생이 시작되었음을 알림
-        while(GPIO.input(echo) == 1):
-                pass
-        pulse_end = time.time() # 신호 0. 초음파 수신 완료를 알림
-
-        pulse_duration = pulse_end - pulse_start
-        return 340*100/2*pulse_duration
+	while(GPIO.input(echo) == 0):
+		pass
+	pulse_start = time.time() # 신호 1. 초음파 발생이 시작되었음을 알림
+	while(GPIO.input(echo) == 1):
+		pass
+	
+	pulse_end = time.time() # 신호 0. 초음파 수신 완료를 알림
+	pulse_duration = pulse_end - pulse_start
+	return 340*100/2*pulse_duration
 
 GPIO.setup(led, GPIO.OUT) # GPIO 6번 핀을 출력 선으로 지정.
 
 def controlLED(onOff): # led 번호의 핀에 onOff(0/1) 값 출력하는 함수
-        GPIO.output(led, onOff)
+	GPIO.output(led, onOff)
+'''
 
+#MODE SELECT
 
-*/
-
-//MODE SELECT
-
-while( mode 설정 ){
+while(True){	# Setup Mode
 
 20번 눌림
 	mode++ % 3
@@ -46,7 +44,8 @@ MODE3
 }
 
 
-while( 타이머 시작 ){
+#start Timer
+while(True){
 
 if(time >= 5)	//	if over 5 hour/min/sec
 	GREEN UP
