@@ -1,78 +1,125 @@
 import time
 import RPi.GPIO as GPIO
-
-# LED 점등을 위한 전역 변수 선언 및 초기화
-led = 6 # 핀 번호 GPIO6 의미
+import enum
 
 tUnit = 1	#Unit differs on MODE
 
-'''
-def measureDistance():
-	global trig, echo
+	#GPIO settings
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
-	while(GPIO.input(echo) == 0):
-		pass
-	pulse_start = time.time() # 신호 1. 초음파 발생이 시작되었음을 알림
-	while(GPIO.input(echo) == 1):
-		pass
-	
-	pulse_end = time.time() # 신호 0. 초음파 수신 완료를 알림
-	pulse_duration = pulse_end - pulse_start
-	return 340*100/2*pulse_duration
+# LED 점등을 위한 전역 변수 선언 및 초기화
+ledR1 = 5 # 핀 번호 GPIO5 의미
+ledR2 = 6 # 핀 번호 GPIO6 의미
+ledR3 = 7 # 핀 번호 GPIO7 의미
 
-GPIO.setup(led, GPIO.OUT) # GPIO 6번 핀을 출력 선으로 지정.
+ledG = 8 # 핀 번호 GPIO8 의미
 
-def controlLED(onOff): # led 번호의 핀에 onOff(0/1) 값 출력하는 함수
-	GPIO.output(led, onOff)
-'''
+ledY1 = 12 # 핀 번호 GPIO12 의미
+ledY2 = 13 # 핀 번호 GPIO13 의미
+ledY3 = 16 # 핀 번호 GPIO16 의미
+ledY4 = 19 # 핀 번호 GPIO19 의미
+ledY5 = 26 # 핀 번호 GPIO26 의미
+
+buttonM = 20 #MODE button
+buttonS = 21 #SELECT button
+
+GPIO.setup(ledR1, GPIO.OUT)
+GPIO.setup(ledR2, GPIO.OUT)
+GPIO.setup(ledR3, GPIO.OUT)
+GPIO.setup(ledG, GPIO.OUT)
+GPIO.setup(ledY1, GPIO.OUT)
+GPIO.setup(ledY2, GPIO.OUT)
+GPIO.setup(ledY3, GPIO.OUT)
+GPIO.setup(ledY4, GPIO.OUT)
+GPIO.setup(ledY5, GPIO.OUT)
+GPIO.setup(buttonM, GPIO.IN, GPIO.PUD_DOWN)
+GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
+mode = 0
+tNum = 0
+class Mode(enum.Enum):
+	MIN = 0
+	10_MIN = 1
+	HOUR = 2
 
 #MODE SELECT
+def buttonPressedMODE(pin):
+	global mode
+	mode += 1
+	mode %= 3
 
-while(True){	# Setup Mode
+#TIME SELECT
+def buttonPressedTIME(pin):
+	global tNum
+	tNum += 1
+	tNum %= 10
 
-20번 눌림
-	mode++ % 3
-MODE1
+# Select MODE
+GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
+GPIO.wait_for_edge(buttomS, GPIO.RISING)	#Waiting for MODE Confirm)
+GPIO.remove_event_detect(buttonM)
+
+# Confirm tUnit depending on mode
+if(mode == Mode.MIN)
 	tUnit = 60
-MODE2
+elif(mode == Mode.10_MIN)
 	tUnit = 60*10
-MODE3
+elif(mode == Mode.HOUR)
 	tUnit = 60*60
 
-21번 눌림 => break;
+print("mode "+mode+" selected") 
 
-}
+# Select TIME
+GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedTIME, 200)
+GPIO.wait_for_edge(buttomS, GPIO.RISING)	#Waiting for TIME Confirm)
+GPIO.remove_event_detect(buttonM)
 
+print("time "+(tNum+1)+" selected") 
 
 #start Timer
 while(True){
 
-if(time >= 5)	//	if over 5 hour/min/sec
-	GREEN UP
+	if(tNum >= 5)	#if over 5 hour/min/sec
+		GPIO.output(ledG, 1)
+	else
+		GPIO.output(ledG, 0)
+	
+	tYellow = tNum % 5 
+	if(tYellow >= 4 )
+		GPIO.output(ledY1, 1)
+		GPIO.output(ledY2, 1)
+		GPIO.output(ledY3, 1)
+		GPIO.output(ledY4, 1)
+		GPIO.output(ledY5, 1)
+	elif(tYellow >= 3 )
+		GPIO.output(ledY1, 1)
+		GPIO.output(ledY2, 1)
+		GPIO.output(ledY3, 1)
+		GPIO.output(ledY4, 1)
+		GPIO.output(ledY5, 0)
+	elif(tYellow >= 2 )
+		GPIO.output(ledY1, 1)
+		GPIO.output(ledY2, 1)
+		GPIO.output(ledY3, 1)
+		GPIO.output(ledY4, 0)
+	elif(tYellow >= 1 )
+		GPIO.output(ledY1, 1)
+		GPIO.output(ledY2, 1)
+		GPIO.output(ledY3, 0)
+	elif(tYellow == 0){
+		GPIO.output(ledY1, 1)
+		GPIO.output(ledY2, 0)
+		sleep(tUnit-60) #last LED
+	#	alarm	#1분전 알람
+		print("ALARM")
+		sleep(60)
+		break	#break while
+	}
 
-tYellow = time%5 If ( tYellow >= 4 )
-	YELLOW 5 UP
-If ( tYellow >= 3 )
-	YELLOW 4 UP
-If ( tYellow >= 2 )
-	YELLOW 3 UP
-If ( tYellow >= 1 )
-	YELLOW 2 UP
-
-if(time == 0){
-	YELLOW 1 UP
-	sleep(tUnit-60) //	last LED
-	alarm	//1분전 알람
-	sleep(60)
-	break	//break while
-}
-else{
 	sleep(1*tUnit)
-	time—
+	tNum -= 1
 }
-
-}
-
+'''
 while(버튼을 누를때까지){
 	alarm()	// finish alarm
 
@@ -81,3 +128,4 @@ while(버튼을 누를때까지){
 		break
 	}
 }
+'''
