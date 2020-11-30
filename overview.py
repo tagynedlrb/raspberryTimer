@@ -1,7 +1,14 @@
 import time
+import paho.mqtt.client as mqtt
 import RPi.GPIO as GPIO
 import enum
 import alarm
+
+broker_ip = "localhost" # 현재 이 컴퓨터를 브로커로 설정
+
+client = mqtt.Client()
+client.connect(broker_ip, 1883)
+client.loop_start()
 
 	#GPIO settings
 GPIO.setmode(GPIO.BCM)
@@ -39,6 +46,7 @@ tUnit = 1	#Unit differs on MODE
 mode = 0
 tNum = 0
 alarmFlag = 1
+timeLeft = 0
 
 from enum import Enum
 class Mode(Enum):
@@ -74,6 +82,15 @@ def buttonPressedALARM(pin):
 	global alarmFlag
 	alarmFlag = False
 
+def publishTime(unit):
+	global timeLeft
+	cnt = 0
+	while(cnt != unit):
+		client.publish("time", timeLeft, qos=0)
+		timeLeft -= 1
+		cnt += 1
+		time.sleep(1)
+
 # Select MODE
 GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
 GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for MODE Confirm)
@@ -98,10 +115,13 @@ GPIO.output(ledY3, 0)
 GPIO.output(ledY4, 0)
 GPIO.output(ledY5, 0)
 
+timeLeft = tUnit * (tNum+1)
+print(timeLeft)
 #start Timer
 while(True):
 
-	print(tUnit, tNum)
+	print(tUnit, tNum+1)
+
 	if(tNum >= 5):	#if over 5 hour/min/sec
 		GPIO.output(ledG, 1)
 	else:
@@ -135,14 +155,15 @@ while(True):
 
 	if(tNum == 0):
 		if(tUnit != 60):
-			time.sleep((tUnit-60)) #last LED
+			publishTime((tUnit-60))	
+#			time.sleep((tUnit-60)) #last LED
 		alarm.alart_1min_left()	#1분전 알람
 		print("ALARM")
-		time.sleep(60)
-#		GPIO.cleanup()	#REAL CODE
+#		time.sleep(60)
+		publishTime(60)	
 		break	#break while
-	
-	time.sleep(1*tUnit)
+
+	publishTime(tUnit)
 	tNum -= 1
 
 GPIO.cleanup()
@@ -150,9 +171,14 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
 GPIO.add_event_detect(buttonS, GPIO.RISING, buttonPressedALARM, 200)
+
 #Alarm until button pressed
 while(alarmFlag):
 	alarm.rooster()
 	time.sleep(2)
+
 GPIO.remove_event_detect(buttonS)
 GPIO.cleanup()
+
+client.loop_stop()
+client.disconnect()
