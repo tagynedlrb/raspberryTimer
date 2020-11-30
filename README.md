@@ -14,3 +14,11 @@ GPIO12, GPIO13, GPIO16, GPIO19, GPIO26
 21 => [SELECT]
 
 온습도 센서 – SDA(GPIO2), SCL(GPIO3)
+블루투스 스피커 => 1분전 알람, 종료 알람(닭소리)
+
+mqtt Topic : CookTimer/#
+CookTimer/temperature
+CookTimer/time
+CookTimer/image
+CookTimer/facerecognition
+등

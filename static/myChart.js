@@ -73,6 +73,7 @@ function addChartData(value) {
 }
 
 function hideshow() { // 캔버스 보이기 숨기기 
+	canvas = document.getElementById('canvas');
 	if(canvas.style.display == "none") 	canvas.style.display = "block"
 	else canvas.style.display = "none"  
 }

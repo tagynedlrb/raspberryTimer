@@ -86,7 +86,7 @@ def publishTime(unit):
 	global timeLeft
 	cnt = 0
 	while(cnt != unit):
-		client.publish("time", timeLeft, qos=0)
+		client.publish("CookTimer/time", timeLeft, qos=0)
 		timeLeft -= 1
 		cnt += 1
 		time.sleep(1)

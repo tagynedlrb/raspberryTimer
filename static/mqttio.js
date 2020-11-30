@@ -21,6 +21,8 @@ function startConnect() { // 접속을 시도하는 함수
 	client.connect({
 		onSuccess: onConnect,
 	});
+	subscribe('CookTimer/#');
+		
 }
 
 var isConnected = false;
@@ -61,14 +63,21 @@ function unsubscribe(topic) {
 function onConnectionLost(responseObject) { // 매개변수인 responseObject는 응답 패킷의 정보를 담은 개체
 	document.getElementById("messages").innerHTML += '<span>오류 : 접속 끊어짐</span><br/>';
 	if (responseObject.errorCode !== 0) {
-		document.getElementById("messages").innerHTML += '<span>오류 : ' + + responseObject.errorMessage + '</span><br/>';
+		document.getElementById("messages").innerHTML += '<span>오류 : ' + responseObject.errorMessage + '</span><br/>';
 	}
 }
 
 // 메시지가 도착할 때 호출되는 함수
 function onMessageArrived(msg) { // 매개변수 msg는 도착한 MQTT 메시지를 담고 있는 객체
-	console.log("onMessageArrived: " + msg.payloadString);
+	console.log("onMessageArrived: " + msg.destinationName +" | "+ msg.payloadString);
 
+    // 토픽 image가 도착하면 payload에 담긴 파일 이름의 이미지 그리기
+    if(msg.destinationName == "CookTimer/image") {
+            drawImage(msg.payloadString); // 메시지에 담긴 파일 이름으로 drawImage() 호출. drawImage()는 웹 페이지에 있음
+    }
+	else if(msg.destinationName == "CookTimer/time"){
+		document.getElementById("timeMessages").innerHTML = '<span>'+msg.payloadString+'</span><br/>';
+	}
 	// 도착한 메시지 출력. mqttio5.js에서 수정함
 	//document.getElementById("messages").innerHTML += '<span>토픽 : ' + msg.destinationName + '  | ' + msg.payloadString + '</span><br/>';
 	addChartData(parseFloat(msg.payloadString));    
@@ -79,4 +88,3 @@ function startDisconnect() {
 	client.disconnect(); // 브로커에 접속 해제
 	document.getElementById("messages").innerHTML += '<span>Disconnected</span><br/>';
 }
-
