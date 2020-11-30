@@ -3,16 +3,13 @@ import paho.mqtt.client as mqtt
 import RPi.GPIO as GPIO
 import enum
 import alarm
+import sys
 
 broker_ip = "localhost" # 현재 이 컴퓨터를 브로커로 설정
 
 client = mqtt.Client()
 client.connect(broker_ip, 1883)
 client.loop_start()
-
-	#GPIO settings
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
 
 # LED 점등을 위한 전역 변수 선언 및 초기화
 ledR1 = 5 # 핀 번호 GPIO5 의미
@@ -30,17 +27,22 @@ ledY5 = 26 # 핀 번호 GPIO26 의미
 buttonM = 20 #MODE button
 buttonS = 21 #SELECT button
 
-GPIO.setup(ledR1, GPIO.OUT)
-GPIO.setup(ledR2, GPIO.OUT)
-GPIO.setup(ledR3, GPIO.OUT)
-GPIO.setup(ledG, GPIO.OUT)
-GPIO.setup(ledY1, GPIO.OUT)
-GPIO.setup(ledY2, GPIO.OUT)
-GPIO.setup(ledY3, GPIO.OUT)
-GPIO.setup(ledY4, GPIO.OUT)
-GPIO.setup(ledY5, GPIO.OUT)
-GPIO.setup(buttonM, GPIO.IN, GPIO.PUD_DOWN)
-GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
+#GPIO settings
+def gpio_init():
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setwarnings(False)
+
+	GPIO.setup(ledR1, GPIO.OUT)
+	GPIO.setup(ledR2, GPIO.OUT)
+	GPIO.setup(ledR3, GPIO.OUT)
+	GPIO.setup(ledG, GPIO.OUT)
+	GPIO.setup(ledY1, GPIO.OUT)
+	GPIO.setup(ledY2, GPIO.OUT)
+	GPIO.setup(ledY3, GPIO.OUT)
+	GPIO.setup(ledY4, GPIO.OUT)
+	GPIO.setup(ledY5, GPIO.OUT)
+	GPIO.setup(buttonM, GPIO.IN, GPIO.PUD_DOWN)
+	GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
 
 tUnit = 1	#Unit differs on MODE
 mode = 0
@@ -59,12 +61,22 @@ def buttonPressedMODE(pin):
 	global mode
 	mode += 1
 	mode %= 3
+	if(mode == 0):
+		GPIO.output(ledR1, 1)
+		GPIO.output(ledR3, 0)
+	elif(mode == 1):
+		GPIO.output(ledR2, 1)
+		GPIO.output(ledR1, 0)
+	elif(mode == 2):
+		GPIO.output(ledR3, 1)
+		GPIO.output(ledR2, 0)
 
 #TIME SELECT
 def buttonPressedTIME(pin):
 	global tNum
 	tNum += 1
 	tNum %= 10
+	ledByTime(tNum)
 
 
 # Confirm tUnit depending on mode
@@ -90,44 +102,23 @@ def publishTime(unit):
 		timeLeft -= 1
 		cnt += 1
 		time.sleep(1)
+def ledAllDown():
+		GPIO.output(ledG, 0)
+		GPIO.output(ledY1, 0)
+		GPIO.output(ledY2, 0)
+		GPIO.output(ledY3, 0)
+		GPIO.output(ledY4, 0)
+		GPIO.output(ledY5, 0)
 
-# Select MODE
-GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
-GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for MODE Confirm)
-GPIO.remove_event_detect(buttonM)
-confirmMODE(mode)
-
-print("mode ", mode, " selected") 
-time.sleep(1)
-
-# Select TIME
-GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedTIME, 200)
-GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for TIME Confirm)
-GPIO.remove_event_detect(buttonM)
-
-print("time ", (tNum+1), " selected") 
-
-# FOR TEST
-GPIO.output(ledG, 0)
-GPIO.output(ledY1, 0)
-GPIO.output(ledY2, 0)
-GPIO.output(ledY3, 0)
-GPIO.output(ledY4, 0)
-GPIO.output(ledY5, 0)
-
-timeLeft = tUnit * (tNum+1)
-print(timeLeft)
-#start Timer
-while(True):
-
-	print(tUnit, tNum+1)
-
-	if(tNum >= 5):	#if over 5 hour/min/sec
+# ledG, Y by time
+def ledByTime(setTime):
+	ledAllDown()
+	if(setTime >= 5):       #if over 5 hour/min/sec
 		GPIO.output(ledG, 1)
 	else:
 		GPIO.output(ledG, 0)
-	
-	tYellow = tNum%5
+
+	tYellow = setTime%5
 	if(tYellow >= 4):
 		GPIO.output(ledY1, 1)
 		GPIO.output(ledY2, 1)
@@ -153,32 +144,64 @@ while(True):
 		GPIO.output(ledY1, 1)
 		GPIO.output(ledY2, 0)
 
-	if(tNum == 0):
-		if(tUnit != 60):
-			publishTime((tUnit-60))	
-#			time.sleep((tUnit-60)) #last LED
-		alarm.alart_1min_left()	#1분전 알람
-		print("ALARM")
-#		time.sleep(60)
-		publishTime(60)	
-		break	#break while
+try:
+	gpio_init()
 
-	publishTime(tUnit)
-	tNum -= 1
+	# Select MODE
+	GPIO.output(ledR1, 1) # Start with Mode.MIN
+	GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedMODE, 200)
+	GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for MODE Confirm)
+	GPIO.remove_event_detect(buttonM)
+	confirmMODE(mode)
+
+	print("mode ", mode, " selected") 
+	time.sleep(1)
+
+	# Select TIME
+	GPIO.add_event_detect(buttonM, GPIO.RISING, buttonPressedTIME, 200)
+	GPIO.wait_for_edge(buttonS, GPIO.RISING)	#Waiting for TIME Confirm)
+	GPIO.remove_event_detect(buttonM)
+
+	print("time ", (tNum+1), " selected") 
+
+	# FOR TEST
+	GPIO.output(ledG, 0)
+	GPIO.output(ledY1, 0)
+	GPIO.output(ledY2, 0)
+	GPIO.output(ledY3, 0)
+	GPIO.output(ledY4, 0)
+	GPIO.output(ledY5, 0)
+
+	timeLeft = tUnit * (tNum+1)
+	print(timeLeft)
+	#start Timer
+	while(True):
+		print(tUnit, tNum+1)
+		ledByTime(tNum)
+		if(tNum == 0):
+			if(tUnit != 60):
+				publishTime((tUnit-60))	
+			alarm.alart_1min_left()	#1분전 알람
+			print("ALARM")
+			publishTime(60)	
+			break	#break while
+		publishTime(tUnit)
+		tNum -= 1
+
+	GPIO.cleanup()
+	gpio_init()
+	GPIO.add_event_detect(buttonS, GPIO.RISING, buttonPressedALARM, 200)
+
+	#Alarm until button pressed
+	while(alarmFlag):
+		alarm.rooster()
+		time.sleep(2)
+
+	GPIO.remove_event_detect(buttonS)
+except KeyboardInterrupt:
+	GPIO.cleanup()
+	sys.exit()
 
 GPIO.cleanup()
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(buttonS, GPIO.IN, GPIO.PUD_DOWN)
-GPIO.add_event_detect(buttonS, GPIO.RISING, buttonPressedALARM, 200)
-
-#Alarm until button pressed
-while(alarmFlag):
-	alarm.rooster()
-	time.sleep(2)
-
-GPIO.remove_event_detect(buttonS)
-GPIO.cleanup()
-
 client.loop_stop()
 client.disconnect()
