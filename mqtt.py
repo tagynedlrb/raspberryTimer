@@ -8,14 +8,11 @@ import myCamera # 카메라 사진 보내기
 flag = False # True이면 "action" 메시지를 수신하였음을 나타냄
 
 def on_connect(client, userdata, flag, rc):
-	client.subscribe("CookTimer/facerecognition", qos = 0)
+	client.subscribe("CookTimer/#", qos = 0)
 
 def on_message(client, userdata, msg) :
 	global flag
 	command = msg.payload.decode("utf-8")
-	if command == "action" :
-		print("action msg received..")
-		flag = True
 
 broker_ip = "localhost" # 현재 이 컴퓨터를 브로커로 설정
 
@@ -30,11 +27,8 @@ while(True):
 	temp = temperature.getTemperature()
 	client.publish("CookTimer/temperature", temp, qos=0)
 
-	if flag==True : # "action" 메시지 수신. 사진 촬영
-		imageFileName = myCamera.takePicture() # 카메라 사진 촬영
-		print(imageFileName)
-		client.publish("CookTimer/image", imageFileName, qos=0)
-		flag = False
+	imageFileName = myCamera.takePicture() # 카메라 사진 촬영
+	client.publish("CookTimer/image", imageFileName, qos=0)
 	time.sleep(1)
 client.loop_stop()
 client.disconnect()

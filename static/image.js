@@ -18,13 +18,3 @@ window.addEventListener("load", function() {
 function drawImage(imgUrl) { // imgUrl은 이미지의 url
 	img.src = imgUrl; // img.onload에 등록된 코드에 의해 그려짐
 }
-
-var isImageSubscribed = false;
-function recognize() {
-        if(!isImageSubscribed) {
-                subscribe('CookTimer/image'); // 토픽 image 등록
-                isImageSubscribed = true;
-        }
-        publish('CookTimer/facerecognition', 'action'); // 토픽: facerecognition, action 메시지 전송
-}
-

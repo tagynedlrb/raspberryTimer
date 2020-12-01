@@ -25,8 +25,8 @@ var config = {
 		scales: { /* x축과 y축 정보 */
 			xAxes: [{
 				display: true,
-				scaleLabel: { display: true, labelString: '시간' },
-			}],
+				scaleLabel: { display: true, labelString: '시간' }
+				}],
 			yAxes: [{
 				display: true,
 				scaleLabel: { display: true, labelString: '온도(섭씨)' }

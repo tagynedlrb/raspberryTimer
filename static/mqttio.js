@@ -79,8 +79,8 @@ function onMessageArrived(msg) { // 매개변수 msg는 도착한 MQTT 메시지
 		document.getElementById("timeMessages").innerHTML = '<span>'+msg.payloadString+'</span><br/>';
 	}
 	// 도착한 메시지 출력. mqttio5.js에서 수정함
-	//document.getElementById("messages").innerHTML += '<span>토픽 : ' + msg.destinationName + '  | ' + msg.payloadString + '</span><br/>';
-	addChartData(parseFloat(msg.payloadString));    
+	else if(msg.destinationName == "CookTimer/temperature")
+		addChartData(parseFloat(msg.payloadString));
 }
 
 // disconnection 버튼이 선택되었을 때 호출되는 함수
