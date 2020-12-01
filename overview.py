@@ -195,7 +195,10 @@ try:
 	#Alarm until button pressed
 	while(alarmFlag):
 		alarm.rooster()
-		time.sleep(2)
+		GPIO.output(ledY1, 1)
+		time.sleep(1)
+		GPIO.output(ledY1, 0)
+		time.sleep(1)
 
 	GPIO.remove_event_detect(buttonS)
 except KeyboardInterrupt:
