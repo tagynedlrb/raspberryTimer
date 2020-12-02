@@ -20,7 +20,6 @@ mqtt Topic : CookTimer/#
 CookTimer/temperature
 CookTimer/time
 CookTimer/image
-CookTimer/facerecognition
 등
 
 [사용 방법]
