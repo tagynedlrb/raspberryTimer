@@ -22,3 +22,9 @@ CookTimer/time
 CookTimer/image
 CookTimer/facerecognition
 등
+
+[사용 방법]
+mosquitto -c /etc/mosquitto/mosquitto.conf
+python3 mqtt.py &
+python3 app.py &
+python3 cookTimer.py
