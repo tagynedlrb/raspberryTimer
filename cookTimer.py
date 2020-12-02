@@ -97,7 +97,7 @@ def buttonPressedALARM(pin):
 def publishTime(unit):
 	global timeLeft
 	cnt = 0
-	while(cnt != unit):
+	while(cnt <= unit and timeLeft >= 0):
 		client.publish("CookTimer/time", timeLeft, qos=0)
 		timeLeft -= 1
 		cnt += 1
@@ -210,6 +210,10 @@ try:
 		time.sleep(1)
 
 	GPIO.remove_event_detect(buttonS)
+
+	#stop html alarm
+	client.publish("CookTimer/alarm", "stop", qos=0)
+
 except KeyboardInterrupt:
 	GPIO.cleanup()
 	sys.exit()

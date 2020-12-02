@@ -1,13 +1,14 @@
 <!doctype html>
 <html>
 <head>
-	<title>차트에 초음파 센서 값 실시간 모니터링</title>
+	<title>화재 예방 모니터링 쿠킹 타이머</title>
 	<meta charset="utf-8">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.2/mqttws31.min.js" type="text/javascript"></script>
 	<script src="./static/mqttio.js" type="text/javascript"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" type="text/javascript"></script>
     <script src="/static/image.js" type="text/javascript"></script>
 	<script src="./static/myChart.js" type="text/javascript"></script>
+	<script src="./static/audio.js" type="text/javascript"></script>
 	<script>
 		window.addEventListener("load", function () {
 			// http://224..129:8080/에서 224...의 IP만 끊어내는 코드
@@ -30,17 +31,20 @@
 	</form>
 	<hr>
 	<h3>남은 시간</h3>
-         <div id="timeMessages">
+<div style="border:1px solid #dedede; width:600px; height:250px; line-height:250px; color:#666;font-size:100px; text-align:center;" id="clock">
 	</div>
 	<hr>
     <h3>CookTimer 카메라(토픽:CookTimer/image)</h3>
          <hr>
          <canvas id="myCanvas" width="320" height="240"></canvas>
-         <div id="messages"></div>
+      <!--   <div id="messages"></div>
+-->
 	<hr>
 	<h3>온도 그래프(토픽:CookTimer/temperature)</h3>
 	<hr>
 	<button id="hideshow" onclick="hideshow()">Hide/Show Chart</button>
 	<canvas id="canvas" width="600" height="400"></canvas>
+<audio loop id = "audio"> <source src="./static/sounds/rooster.mp3" type="audio/mp3"> </audio>
+</script>
 </body>
 </html>

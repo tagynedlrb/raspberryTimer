@@ -30,7 +30,7 @@ var isConnected = false;
 function onConnect() { // 브로커로의 접속이 성공할 때 호출되는 함수
 	isConnected = true;
 
-	document.getElementById("messages").innerHTML += '<span>Connected</span><br/>';
+	//document.getElementById("messages").innerHTML += '<span>Connected</span><br/>';
 }
 
 var topicSave;
@@ -42,7 +42,6 @@ function subscribe(topic) {
 		return
 	}
 	// 토픽으로 subscribe 하고 있음을 id가 message인 DIV에 출력
-	document.getElementById("messages").innerHTML += '<span>Subscribing to: ' + topic + '</span><br/>';
 	client.subscribe(topic); // 브로커에 subscribe
 }
 function publish(topic, msg) {
@@ -76,7 +75,25 @@ function onMessageArrived(msg) { // 매개변수 msg는 도착한 MQTT 메시지
             drawImage(msg.payloadString); // 메시지에 담긴 파일 이름으로 drawImage() 호출. drawImage()는 웹 페이지에 있음
     }
 	else if(msg.destinationName == "CookTimer/time"){
-		document.getElementById("timeMessages").innerHTML = '<span>'+msg.payloadString+'</span><br/>';
+		var clock = document.getElementById("clock");
+		var time = parseInt(msg.payloadString);
+		var currentHours = addZeros(parseInt(time/3600), 2); 
+		time %= 3600;
+		var currentMinute = addZeros(parseInt(time/60), 2);
+		time %= 60;
+		var currentSeconds = addZeros(parseInt(time), 2);
+
+		if(currentSeconds >= 50){// 50초 이상일 때 색을 변환해 준다.
+			currentSeconds = '<span style="color:#de1951;">'+currentSeconds+'</span>';
+		}
+		clock.innerHTML = currentHours+":"+currentMinute+":"+currentSeconds; //시간 출력
+		 
+		if(msg.payloadString == '0')
+			play();
+	}
+
+	else if(msg.destinationName == "CookTimer/alarm"){
+		pause();
 	}
 	// 도착한 메시지 출력. mqttio5.js에서 수정함
 	else if(msg.destinationName == "CookTimer/temperature")
@@ -86,5 +103,16 @@ function onMessageArrived(msg) { // 매개변수 msg는 도착한 MQTT 메시지
 // disconnection 버튼이 선택되었을 때 호출되는 함수
 function startDisconnect() {
 	client.disconnect(); // 브로커에 접속 해제
-	document.getElementById("messages").innerHTML += '<span>Disconnected</span><br/>';
+//	document.getElementById("messages").innerHTML += '<span>Disconnected</span><br/>';
+}
+
+function addZeros(num, digit) { // 자릿수 맞춰주기
+	  var zero = '';
+	  num = num.toString();
+	  if (num.length < digit) {
+	    for (i = 0; i < digit - num.length; i++) {
+	      zero += '0';
+	    }
+	  }
+	  return zero + num;
 }
